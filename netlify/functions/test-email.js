@@ -10,6 +10,9 @@ exports.handler = async function(event, context) {
   }
 
   try {
+    // Parsear el cuerpo de la solicitud
+    const { email } = JSON.parse(event.body);
+    
     // Inicializar MailerSend con tu API key
     const mailerSend = new MailerSend({
       apiKey: process.env.MAILERSEND_API_KEY,
@@ -21,9 +24,9 @@ exports.handler = async function(event, context) {
       "Simulador de Vibraciones"
     );
     
-    // Configurar el destinatario (se enviará al correo proporcionado en el body)
+    // Configurar el destinatario
     const recipients = [
-      new Recipient("test@example.com", "Usuario de Prueba")  // Se reemplazará con el correo proporcionado
+      new Recipient(email, "Usuario de Prueba")
     ];
     
     // Configurar el correo
