@@ -9,32 +9,57 @@ import {
 } from '../types/auth';
 import { v4 as uuidv4 } from 'uuid';
 
-// En una aplicación real, estas funciones se conectarían a un backend
-// Para esta demo, simulamos el envío de correo en la consola
-const sendVerificationEmail = (email: string, token: string, userId: string) => {
-  // Obtener la URL base desde las variables de entorno o usar el valor por defecto
-  const baseUrl = process.env.REACT_APP_API_URL || window.location.origin;
-  
-  console.log(`
-    ---------- EMAIL SIMULADO ----------
-    Para: ${email}
-    Asunto: Verifica tu cuenta en el Simulador de Examen de Vibraciones
+// Función para enviar correo de verificación usando la función serverless de Netlify
+const sendVerificationEmail = async (email: string, token: string, userId: string, firstName: string, lastName: string) => {
+  try {
+    // Obtener la URL base desde las variables de entorno o usar el valor por defecto
+    const baseUrl = process.env.REACT_APP_API_URL || window.location.origin;
     
-    Hola,
+    // En desarrollo, mostrar el correo en la consola
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`
+        ---------- EMAIL SIMULADO ----------
+        Para: ${email}
+        Asunto: Verifica tu cuenta en el Simulador de Examen de Vibraciones
+        
+        Hola ${firstName},
+        
+        Gracias por registrarte en nuestro Simulador de Examen de Vibraciones.
+        Para completar tu registro, haz clic en el siguiente enlace:
+        
+        ${baseUrl}/verify?token=${token}&userId=${userId}
+        
+        Si no solicitaste este registro, puedes ignorar este correo.
+        
+        Saludos,
+        El equipo del Simulador de Examen de Vibraciones
+        -----------------------------------
+      `);
+      return Promise.resolve(true);
+    }
     
-    Gracias por registrarte en nuestro Simulador de Examen de Vibraciones.
-    Para completar tu registro, haz clic en el siguiente enlace:
+    // En producción, usar la función serverless de Netlify
+    const response = await fetch('/.netlify/functions/send-email', {
+      method: 'POST',
+      body: JSON.stringify({
+        email,
+        token,
+        userId,
+        firstName,
+        lastName
+      })
+    });
     
-    ${baseUrl}/verify?token=${token}&userId=${userId}
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Error al enviar correo de verificación');
+    }
     
-    Si no solicitaste este registro, puedes ignorar este correo.
-    
-    Saludos,
-    El equipo del Simulador de Examen de Vibraciones
-    -----------------------------------
-  `);
-  
-  return Promise.resolve(true);
+    return Promise.resolve(true);
+  } catch (error) {
+    console.error('Error al enviar correo de verificación:', error);
+    return Promise.reject(error);
+  }
 };
 
 export const useAuth = () => {
@@ -137,7 +162,7 @@ export const useAuth = () => {
       setVerifications(updatedVerifications);
       
       // Enviar correo de verificación
-      await sendVerificationEmail(formData.email, token, userId);
+      await sendVerificationEmail(formData.email, token, userId, formData.firstName, formData.lastName);
       
       return { success: true, message: 'Registro exitoso. Por favor verifica tu correo electrónico.' };
     } catch (error) {
