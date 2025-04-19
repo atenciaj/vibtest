@@ -17,62 +17,6 @@ export const useExam = (questions: Question[]) => {
 
   const [results, setResults] = useLocalStorage<ExamResult[]>('examResults', []);
 
-  useEffect(() => {
-    let timer: NodeJS.Timeout;
-
-    if (examState.examInProgress && !examState.examFinished && examState.timeLeft > 0) {
-      timer = setInterval(() => {
-        setExamState(prev => ({
-          ...prev,
-          timeLeft: prev.timeLeft - 1
-        }));
-      }, 1000);
-    } else if (examState.timeLeft === 0) {
-      finishExam();
-    }
-
-    return () => {
-      if (timer) {
-        clearInterval(timer);
-      }
-    };
-  }, [examState.examInProgress, examState.examFinished, examState.timeLeft, finishExam]);
-
-  const startExam = useCallback(() => {
-    setExamState(prev => ({
-      ...prev,
-      currentQuestionIndex: 0,
-      timeLeft: INITIAL_TIME,
-      userAnswers: {},
-      examInProgress: true,
-      examFinished: false
-    }));
-  }, []);
-
-  const answerQuestion = useCallback((questionId: number, answerIndex: number) => {
-    setExamState(prev => ({
-      ...prev,
-      userAnswers: {
-        ...prev.userAnswers,
-        [questionId]: answerIndex
-      }
-    }));
-  }, []);
-
-  const nextQuestion = useCallback(() => {
-    setExamState(prev => ({
-      ...prev,
-      currentQuestionIndex: Math.min(prev.currentQuestionIndex + 1, prev.questions.length - 1)
-    }));
-  }, []);
-
-  const previousQuestion = useCallback(() => {
-    setExamState(prev => ({
-      ...prev,
-      currentQuestionIndex: Math.max(prev.currentQuestionIndex - 1, 0)
-    }));
-  }, []);
-
   const calculateResult = useCallback((): ExamResult => {
     const timeSpent = INITIAL_TIME - examState.timeLeft;
     let score = 0;
@@ -117,6 +61,62 @@ export const useExam = (questions: Question[]) => {
     }));
     setResults(prev => [...prev, result]);
   }, [calculateResult, setResults]);
+
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+
+    if (examState.examInProgress && !examState.examFinished && examState.timeLeft > 0) {
+      timer = setInterval(() => {
+        setExamState(prev => ({
+          ...prev,
+          timeLeft: prev.timeLeft - 1
+        }));
+      }, 1000);
+    } else if (examState.timeLeft === 0 && examState.examInProgress) {
+      finishExam();
+    }
+
+    return () => {
+      if (timer) {
+        clearInterval(timer);
+      }
+    };
+  }, [examState.examInProgress, examState.examFinished, examState.timeLeft, finishExam]);
+
+  const startExam = useCallback(() => {
+    setExamState(prev => ({
+      ...prev,
+      currentQuestionIndex: 0,
+      timeLeft: INITIAL_TIME,
+      userAnswers: {},
+      examInProgress: true,
+      examFinished: false
+    }));
+  }, []);
+
+  const answerQuestion = useCallback((questionId: number, answerIndex: number) => {
+    setExamState(prev => ({
+      ...prev,
+      userAnswers: {
+        ...prev.userAnswers,
+        [questionId]: answerIndex
+      }
+    }));
+  }, []);
+
+  const nextQuestion = useCallback(() => {
+    setExamState(prev => ({
+      ...prev,
+      currentQuestionIndex: Math.min(prev.currentQuestionIndex + 1, prev.questions.length - 1)
+    }));
+  }, []);
+
+  const previousQuestion = useCallback(() => {
+    setExamState(prev => ({
+      ...prev,
+      currentQuestionIndex: Math.max(prev.currentQuestionIndex - 1, 0)
+    }));
+  }, []);
 
   const saveResult = useCallback((name: string) => {
     if (examState.result) {
