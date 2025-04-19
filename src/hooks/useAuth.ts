@@ -325,27 +325,30 @@ export const useAuth = () => {
   }, [setCurrentUser]);
   
   const updateUserExamHistory = useCallback((examId: string) => {
-    if (!authState.user) return;
-    
+    if (!currentUser) return;
+
     const updatedUser = {
-      ...authState.user,
-      examHistory: [...authState.user.examHistory, examId]
+      ...currentUser,
+      examHistory: [...(currentUser.examHistory || []), examId]
     };
-    
-    // Actualizar en el listado de usuarios
-    const updatedUsers = users.map(user => 
-      user.id === updatedUser.id ? updatedUser : user
-    );
-    
-    setUsers(updatedUsers);
+
     setCurrentUser(updatedUser);
-  }, [authState.user, users, setUsers, setCurrentUser]);
+    
+    // Actualizar el usuario en la lista de usuarios
+    const updatedUsers = users.map(user => 
+      user.id === currentUser.id ? updatedUser : user
+    );
+    setUsers(updatedUsers);
+  }, [currentUser, users]);
   
   return {
-    ...authState,
-    register,
+    user: authState.user,
+    isAuthenticated: authState.isAuthenticated,
+    isLoading: authState.isLoading,
+    error: authState.error,
     login,
     logout,
+    register,
     verifyUser,
     updateUserExamHistory
   };

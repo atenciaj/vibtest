@@ -21,11 +21,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   
   // Usar useMemo para evitar recreaciones innecesarias del valor del contexto
   const value = useMemo(() => ({
-    auth,
+    user: auth.user,
+    isAuthenticated: auth.isAuthenticated,
+    isLoading: auth.isLoading,
+    error: auth.error,
     login: auth.login,
     logout: auth.logout,
     register: auth.register,
-    verifyUser: auth.verifyUser
+    verifyUser: auth.verifyUser,
+    updateUserExamHistory: auth.updateUserExamHistory
   }), [auth]);
   
   return (

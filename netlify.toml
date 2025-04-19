@@ -21,16 +21,10 @@
   to = "/index.html"
   status = 200
 
-[[redirects]]
-  from = "/.netlify/functions/*"
-  to = "/.netlify/functions/:splat"
-  status = 200
-
 [functions]
   node_bundler = "esbuild"
   external_node_modules = ["@getbrevo/brevo"]
   included_files = ["netlify/functions/**/*"]
-  directory = "netlify/functions"
 
 [context.production]
   command = "npm run build"
