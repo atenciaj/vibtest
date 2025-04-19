@@ -20,17 +20,16 @@ exports.handler = async function(event, context) {
       throw new Error('BREVO_API_KEY no está configurada');
     }
 
-    if (!process.env.EMAIL_FROM_ADDRESS) {
-      console.error('EMAIL_FROM_ADDRESS no está configurada');
-      throw new Error('EMAIL_FROM_ADDRESS no está configurada');
-    }
-
     // Inicializar el cliente de Brevo
     console.log('Inicializando cliente de Brevo...');
     const defaultClient = Brevo.ApiClient.instance;
-    const apiKey = defaultClient.authentications['api-key'];
-    apiKey.apiKey = process.env.BREVO_API_KEY;
+    defaultClient.authentications['api-key'].apiKey = process.env.BREVO_API_KEY;
 
+    // Configurar el cliente con los parámetros SMTP
+    defaultClient.basePath = 'https://smtp-relay.brevo.com';
+    defaultClient.port = 587;
+    defaultClient.username = '8ad9a7001@smtp-brevo.com';
+    
     // Parsear el cuerpo de la solicitud
     let requestData;
     try {
@@ -39,7 +38,6 @@ exports.handler = async function(event, context) {
         email: requestData.email,
         firstName: requestData.firstName,
         lastName: requestData.lastName,
-        // No logueamos token ni userId por seguridad
       });
     } catch (error) {
       console.error('Error al parsear el cuerpo de la solicitud:', error);
@@ -85,7 +83,7 @@ exports.handler = async function(event, context) {
     `;
     sendSmtpEmail.sender = { 
       name: "Simulador de Vibraciones", 
-      email: process.env.EMAIL_FROM_ADDRESS 
+      email: "admin@vib-test.ltd"  // Email fijo del remitente
     };
     sendSmtpEmail.to = [{ 
       email: email, 
@@ -111,7 +109,8 @@ exports.handler = async function(event, context) {
     console.error('Error detallado:', {
       message: error.message,
       stack: error.stack,
-      response: error.response?.text
+      response: error.response?.text,
+      config: error.config
     });
     
     // Devolver el error
@@ -122,6 +121,7 @@ exports.handler = async function(event, context) {
         error: 'Error al enviar correo de verificación',
         details: error.message,
         response: error.response?.text,
+        config: error.config,
         stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
       })
     };
