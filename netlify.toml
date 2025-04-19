@@ -1,7 +1,12 @@
 [build]
-  command = "CI= npm run build"
+  base = "/"
+  command = "npm run build"
   publish = "build"
   functions = "netlify/functions"
+
+[build.environment]
+  NODE_VERSION = "18"
+  NPM_VERSION = "9"
 
 [dev]
   command = "npm start"
@@ -17,4 +22,6 @@
   status = 200
 
 [functions]
-  node_bundler = "esbuild" 
+  node_bundler = "esbuild"
+  external_node_modules = ["@getbrevo/brevo"]
+  included_files = ["netlify/functions/**/*"] 

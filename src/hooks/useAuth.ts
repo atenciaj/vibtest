@@ -38,8 +38,8 @@ const sendVerificationEmail = async (email: string, token: string, userId: strin
       return Promise.resolve(true);
     }
     
-    // En producción, usar la función serverless de Netlify
-    const response = await fetch('/.netlify/functions/send-email', {
+    // En producción, usar la función serverless de Netlify con Brevo
+    const response = await fetch('/.netlify/functions/send-verification-email', {
       method: 'POST',
       body: JSON.stringify({
         email,

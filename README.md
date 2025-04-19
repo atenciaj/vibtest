@@ -1,6 +1,62 @@
 # Simulador de Examen de Vibraciones
 
-Una aplicación web para practicar exámenes de vibraciones con preguntas reales y retroalimentación inmediata.
+Aplicación web para simular exámenes de vibraciones con sistema de registro y autenticación.
+
+## Configuración de Brevo para envío de correos
+
+### 1. Crear una cuenta en Brevo
+
+1. Ve a [Brevo](https://www.brevo.com/)
+2. Regístrate para una cuenta gratuita
+3. Verifica tu correo electrónico
+
+### 2. Configurar el dominio de envío
+
+1. En el panel de Brevo, ve a Settings > Senders & Domains
+2. Verifica tu dominio (el que usas con GoDaddy)
+3. Sigue las instrucciones para agregar los registros DNS necesarios
+
+### 3. Obtener la API Key
+
+1. En el panel de Brevo, ve a Settings > API Keys & Tokens
+2. Crea una nueva API Key
+3. Copia la API Key generada
+
+### 4. Configurar las variables de entorno en Netlify
+
+1. Ve al panel de Netlify
+2. Selecciona tu sitio
+3. Ve a Site settings > Build & deploy > Environment
+4. Agrega las siguientes variables:
+   ```
+   BREVO_API_KEY=tu_api_key_de_brevo
+   EMAIL_FROM_ADDRESS=tu_correo_verificado@tudominio.com
+   ```
+
+### 5. Probar la configuración
+
+1. Despliega los cambios a Netlify
+2. Visita `https://tu-sitio.netlify.app/test-sendgrid.html`
+3. Intenta enviar un correo de prueba
+
+## Desarrollo local
+
+```bash
+# Instalar dependencias
+npm install
+
+# Iniciar servidor de desarrollo
+npm start
+
+# Construir para producción
+npm run build
+```
+
+## Estructura del proyecto
+
+- `src/`: Código fuente de la aplicación React
+- `netlify/functions/`: Funciones serverless para Netlify
+- `public/`: Archivos estáticos
 
 ## Características
 
