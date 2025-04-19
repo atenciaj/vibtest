@@ -17,7 +17,6 @@ import { SampleQuestionsPage } from './pages/SampleQuestionsPage';
 
 const App: React.FC = () => {
   const [currentView, setCurrentView] = useState<View | 'profile'>('home');
-  const [selectedCourse, setSelectedCourse] = useState<string | null>(null);
   const { user, isAuthenticated, logout, updateUserExamHistory } = useAuth();
   
   const {
@@ -34,15 +33,6 @@ const App: React.FC = () => {
 
   const handleViewChange = (view: View | 'profile') => {
     setCurrentView(view);
-  };
-
-  const handleCourseSelect = (courseId: string) => {
-    setSelectedCourse(courseId);
-  };
-
-  const handleStartExam = () => {
-    startExam();
-    setCurrentView('exam');
   };
 
   const handleFinishExam = () => {
@@ -69,11 +59,6 @@ const App: React.FC = () => {
     deleteResult(result.id);
   };
   
-  // Componente privado que requiere autenticación
-  const PrivateRoute: React.FC<{ element: React.ReactNode }> = ({ element }) => {
-    return isAuthenticated ? <>{element}</> : <Navigate to="/login" replace />;
-  };
-  
   const renderContent = () => {
     switch (currentView) {
       case 'profile':
@@ -85,7 +70,7 @@ const App: React.FC = () => {
         
       case 'home':
         return (
-          <CoursesHomePage onCourseSelect={handleCourseSelect} />
+          <CoursesHomePage />
         );
 
       case 'exam':
@@ -156,7 +141,7 @@ const App: React.FC = () => {
             } />
             <Route path="/sample-questions/:courseId" element={<SampleQuestionsPage />} />
             <Route path="/" element={
-              isAuthenticated ? renderContent() : <CoursesHomePage onCourseSelect={handleCourseSelect} />
+              isAuthenticated ? renderContent() : <CoursesHomePage />
             } />
           </Routes>
         </main>

@@ -13,7 +13,7 @@ import { v4 as uuidv4 } from 'uuid';
 const sendVerificationEmail = async (email: string, token: string, userId: string, firstName: string, lastName: string) => {
   try {
     // Obtener la URL base desde las variables de entorno o usar el valor por defecto
-    const baseUrl = process.env.REACT_APP_API_URL || window.location.origin;
+    const baseUrl = process.env.REACT_APP_SITE_URL || window.location.origin;
     
     // En desarrollo, mostrar el correo en la consola
     if (process.env.NODE_ENV === 'development') {
@@ -41,6 +41,9 @@ const sendVerificationEmail = async (email: string, token: string, userId: strin
     // En producción, usar la función serverless de Netlify con Brevo
     const response = await fetch('/.netlify/functions/send-verification-email', {
       method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
       body: JSON.stringify({
         email,
         token,
@@ -50,15 +53,16 @@ const sendVerificationEmail = async (email: string, token: string, userId: strin
       })
     });
     
+    const data = await response.json();
+    
     if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error || 'Error al enviar correo de verificación');
+      throw new Error(data.error || 'Error al enviar correo de verificación');
     }
     
-    return Promise.resolve(true);
+    return true;
   } catch (error) {
     console.error('Error al enviar correo de verificación:', error);
-    return Promise.reject(error);
+    throw error;
   }
 };
 
@@ -73,9 +77,62 @@ export const useAuth = () => {
     error: null
   });
   
-  const [users, setUsers] = useLocalStorage<User[]>('vibration_app_users', []);
-  const [verifications, setVerifications] = useLocalStorage<VerificationData[]>('vibration_app_verifications', []);
-  const [currentUser, setCurrentUser] = useLocalStorage<User | null>('vibration_app_current_user', null);
+  // Mover el uso de localStorage dentro de un try-catch
+  const [users, setUsers] = useState<User[]>(() => {
+    try {
+      const savedUsers = localStorage.getItem('vibration_app_users');
+      return savedUsers ? JSON.parse(savedUsers) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  const [verifications, setVerifications] = useState<VerificationData[]>(() => {
+    try {
+      const savedVerifications = localStorage.getItem('vibration_app_verifications');
+      return savedVerifications ? JSON.parse(savedVerifications) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  const [currentUser, setCurrentUser] = useState<User | null>(() => {
+    try {
+      const savedUser = localStorage.getItem('vibration_app_current_user');
+      return savedUser ? JSON.parse(savedUser) : null;
+    } catch {
+      return null;
+    }
+  });
+
+  // Persistir cambios en localStorage
+  useEffect(() => {
+    try {
+      localStorage.setItem('vibration_app_users', JSON.stringify(users));
+    } catch (error) {
+      console.error('Error saving users to localStorage:', error);
+    }
+  }, [users]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('vibration_app_verifications', JSON.stringify(verifications));
+    } catch (error) {
+      console.error('Error saving verifications to localStorage:', error);
+    }
+  }, [verifications]);
+
+  useEffect(() => {
+    try {
+      if (currentUser) {
+        localStorage.setItem('vibration_app_current_user', JSON.stringify(currentUser));
+      } else {
+        localStorage.removeItem('vibration_app_current_user');
+      }
+    } catch (error) {
+      console.error('Error saving currentUser to localStorage:', error);
+    }
+  }, [currentUser]);
   
   // Inicializar el administrador si no existe - ejecuta solo una vez al montar
   useEffect(() => {

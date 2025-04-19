@@ -36,7 +36,7 @@ export const useExam = (questions: Question[]) => {
         clearInterval(timer);
       }
     };
-  }, [examState.examInProgress, examState.examFinished, examState.timeLeft]);
+  }, [examState.examInProgress, examState.examFinished, examState.timeLeft, finishExam]);
 
   const startExam = useCallback(() => {
     setExamState(prev => ({

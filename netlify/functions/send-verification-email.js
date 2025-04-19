@@ -10,16 +10,43 @@ exports.handler = async function(event, context) {
   }
 
   try {
+    // Validar que tenemos las variables de entorno necesarias
+    if (!process.env.BREVO_API_KEY) {
+      throw new Error('BREVO_API_KEY no está configurada');
+    }
+
+    if (!process.env.EMAIL_FROM_ADDRESS) {
+      throw new Error('EMAIL_FROM_ADDRESS no está configurada');
+    }
+
     // Inicializar el cliente de Brevo
     const defaultClient = Brevo.ApiClient.instance;
     const apiKey = defaultClient.authentications['api-key'];
     apiKey.apiKey = process.env.BREVO_API_KEY;
 
     // Parsear el cuerpo de la solicitud
-    const { email, token, userId, firstName, lastName } = JSON.parse(event.body);
+    let requestData;
+    try {
+      requestData = JSON.parse(event.body);
+    } catch (error) {
+      return {
+        statusCode: 400,
+        body: JSON.stringify({ error: 'Cuerpo de la solicitud inválido' })
+      };
+    }
+
+    const { email, token, userId, firstName, lastName } = requestData;
+
+    // Validar campos requeridos
+    if (!email || !token || !userId || !firstName || !lastName) {
+      return {
+        statusCode: 400,
+        body: JSON.stringify({ error: 'Faltan campos requeridos' })
+      };
+    }
     
-    // Obtener la URL base desde las variables de entorno
-    const baseUrl = process.env.URL || 'https://tu-app.netlify.app';
+    // Obtener la URL base desde las variables de entorno o usar la URL de Netlify
+    const baseUrl = process.env.SITE_URL || context.site.url;
     
     // Crear el enlace de verificación
     const verificationLink = `${baseUrl}/verify?token=${token}&userId=${userId}`;
@@ -48,7 +75,8 @@ exports.handler = async function(event, context) {
     }];
     
     // Enviar el correo
-    await api.sendTransacEmail(sendSmtpEmail);
+    const result = await api.sendTransacEmail(sendSmtpEmail);
+    console.log('Email enviado exitosamente:', result);
     
     // Devolver una respuesta exitosa
     return {
@@ -59,7 +87,7 @@ exports.handler = async function(event, context) {
       })
     };
   } catch (error) {
-    console.error('Error al enviar correo de verificación:', error);
+    console.error('Error detallado:', error);
     
     // Devolver el error
     return {
@@ -67,7 +95,8 @@ exports.handler = async function(event, context) {
       body: JSON.stringify({ 
         success: false, 
         error: 'Error al enviar correo de verificación',
-        details: error.message
+        details: error.message,
+        stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
       })
     };
   }

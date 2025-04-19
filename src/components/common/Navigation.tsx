@@ -1,5 +1,5 @@
 import React from 'react';
-import { Home, ClipboardList, PieChart, FileSearch, User, LogOut } from 'lucide-react';
+import { Home, ClipboardList, PieChart, FileSearch, User } from 'lucide-react';
 import { User as UserType } from '../../types/auth';
 import { View } from '../../types/exam';
 
