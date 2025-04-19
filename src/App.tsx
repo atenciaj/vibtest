@@ -14,10 +14,12 @@ import { VerifyPage } from './pages/VerifyPage';
 import { useAuth } from './context/AuthContext';
 import { CoursesHomePage } from './pages/CoursesHomePage';
 import { SampleQuestionsPage } from './pages/SampleQuestionsPage';
+import { useNavigate } from 'react-router-dom';
 
 const App: React.FC = () => {
   const [currentView, setCurrentView] = useState<View | 'profile'>('home');
   const { user, isAuthenticated, logout, updateUserExamHistory } = useAuth();
+  const navigate = useNavigate();
   
   const {
     examState,
@@ -58,6 +60,10 @@ const App: React.FC = () => {
   const handleDeleteResult = (result: ExamResult) => {
     deleteResult(result.id);
   };
+
+  const handleCourseSelect = (courseId: string) => {
+    navigate(`/sample-questions/${courseId}`);
+  };
   
   const renderContent = () => {
     switch (currentView) {
@@ -70,7 +76,7 @@ const App: React.FC = () => {
         
       case 'home':
         return (
-          <CoursesHomePage />
+          <CoursesHomePage onCourseSelect={handleCourseSelect} />
         );
 
       case 'exam':
@@ -141,7 +147,7 @@ const App: React.FC = () => {
             } />
             <Route path="/sample-questions/:courseId" element={<SampleQuestionsPage />} />
             <Route path="/" element={
-              isAuthenticated ? renderContent() : <CoursesHomePage />
+              isAuthenticated ? renderContent() : <CoursesHomePage onCourseSelect={handleCourseSelect} />
             } />
           </Routes>
         </main>

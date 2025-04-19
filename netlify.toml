@@ -30,6 +30,7 @@
   node_bundler = "esbuild"
   external_node_modules = ["@getbrevo/brevo"]
   included_files = ["netlify/functions/**/*"]
+  directory = "netlify/functions"
 
 [context.production]
   command = "npm run build"
