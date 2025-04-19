@@ -1,6 +1,7 @@
 import React from 'react';
 import { User as UserIcon, LogOut } from 'lucide-react';
 import { User } from '../../types/auth';
+import { ClearRegistrationsButton } from './ClearRegistrationsButton';
 
 interface UserProfileProps {
   user: User;
@@ -71,6 +72,25 @@ export const UserProfile: React.FC<UserProfileProps> = ({ user, onLogout }) => {
           </div>
         )}
       </div>
+      
+      {/* Panel de administración - solo visible para administradores */}
+      {user.isAdmin && (
+        <div className="border-t mt-6 pt-4">
+          <h4 className="text-lg font-semibold mb-2">Panel de Administración</h4>
+          <div className="bg-gray-50 p-4 rounded">
+            <h5 className="font-medium mb-3">Herramientas de Administrador</h5>
+            <div className="space-y-4">
+              <div>
+                <h6 className="text-sm font-semibold text-gray-500 mb-1">Gestión de Registros</h6>
+                <p className="text-sm text-gray-600 mb-2">
+                  Usa esta opción para eliminar registros de prueba y limpiar la base de datos
+                </p>
+                <ClearRegistrationsButton />
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }; 
