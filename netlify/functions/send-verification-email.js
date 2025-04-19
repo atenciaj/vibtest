@@ -20,16 +20,6 @@ exports.handler = async function(event, context) {
       throw new Error('BREVO_API_KEY no está configurada');
     }
 
-    // Inicializar el cliente de Brevo
-    console.log('Inicializando cliente de Brevo...');
-    const defaultClient = Brevo.ApiClient.instance;
-    defaultClient.authentications['api-key'].apiKey = process.env.BREVO_API_KEY;
-
-    // Configurar el cliente con los parámetros SMTP
-    defaultClient.basePath = 'https://smtp-relay.brevo.com';
-    defaultClient.port = 587;
-    defaultClient.username = '8ad9a7001@smtp-brevo.com';
-    
     // Parsear el cuerpo de la solicitud
     let requestData;
     try {
@@ -66,34 +56,48 @@ exports.handler = async function(event, context) {
     const verificationLink = `${baseUrl}/verify?token=${token}&userId=${userId}`;
     console.log('Enlace de verificación generado');
     
-    // Crear una instancia de la API
-    const api = new Brevo.TransactionalEmailsApi();
+    // Configurar cliente Brevo según documentación oficial
+    const defaultClient = Brevo.ApiClient.instance;
+    defaultClient.authentications['api-key'].apiKey = process.env.BREVO_API_KEY;
     
-    // Configurar el correo
-    console.log('Configurando correo electrónico...');
+    const apiInstance = new Brevo.TransactionalEmailsApi();
+    
+    // Crea la solicitud utilizando SendSmtpEmail según documentación
     const sendSmtpEmail = new Brevo.SendSmtpEmail();
-    sendSmtpEmail.subject = "Verifica tu cuenta en el Simulador de Examen de Vibraciones";
-    sendSmtpEmail.htmlContent = `
-      <h2>Hola ${firstName},</h2>
-      <p>Gracias por registrarte en nuestro Simulador de Examen de Vibraciones.</p>
-      <p>Para completar tu registro, haz clic en el siguiente enlace:</p>
-      <p><a href="${verificationLink}">${verificationLink}</a></p>
-      <p>Si no solicitaste este registro, puedes ignorar este correo.</p>
-      <p>Saludos,<br>El equipo del Simulador de Examen de Vibraciones</p>
-    `;
-    sendSmtpEmail.sender = { 
-      name: "Simulador de Vibraciones", 
-      email: "admin@vib-test.ltd"  // Email fijo del remitente
+    
+    sendSmtpEmail.sender = {
+      name: "Simulador de Vibraciones",
+      email: "admin@vib-test.ltd"
     };
-    sendSmtpEmail.to = [{ 
-      email: email, 
-      name: `${firstName} ${lastName}` 
+    
+    sendSmtpEmail.to = [{
+      email: email,
+      name: `${firstName} ${lastName}`
     }];
     
-    console.log('Intentando enviar correo a:', email);
+    sendSmtpEmail.subject = "Verifica tu cuenta en el Simulador de Examen de Vibraciones";
     
-    // Enviar el correo
-    const result = await api.sendTransacEmail(sendSmtpEmail);
+    sendSmtpEmail.htmlContent = `
+      <html>
+        <head></head>
+        <body>
+          <h2>Hola ${firstName},</h2>
+          <p>Gracias por registrarte en nuestro Simulador de Examen de Vibraciones.</p>
+          <p>Para completar tu registro, haz clic en el siguiente enlace:</p>
+          <p><a href="${verificationLink}">${verificationLink}</a></p>
+          <p>Si no solicitaste este registro, puedes ignorar este correo.</p>
+          <p>Saludos,<br>El equipo del Simulador de Examen de Vibraciones</p>
+        </body>
+      </html>
+    `;
+    
+    // Agregar tags para seguimiento
+    sendSmtpEmail.tags = ["registro", "verificacion"];
+    
+    console.log('Enviando correo a través de Brevo API...');
+    
+    // Enviar el correo utilizando la API de Brevo
+    const result = await apiInstance.sendTransacEmail(sendSmtpEmail);
     console.log('Email enviado exitosamente:', result);
     
     // Devolver una respuesta exitosa
@@ -121,7 +125,6 @@ exports.handler = async function(event, context) {
         error: 'Error al enviar correo de verificación',
         details: error.message,
         response: error.response?.text,
-        config: error.config,
         stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
       })
     };
