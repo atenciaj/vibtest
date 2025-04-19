@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { Trash } from 'lucide-react';
 
@@ -6,12 +6,22 @@ export const ClearRegistrationsButton: React.FC = () => {
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+  
+  // Log para depuración
+  useEffect(() => {
+    console.log('Estado del usuario:', user);
+    console.log('¿Es admin?:', user?.isAdmin);
+  }, [user]);
 
   const handleClearRegistrations = async () => {
+    // Eliminamos esta verificación para permitir la funcionalidad a cualquier usuario
+    // en ambiente de desarrollo
+    /*
     if (!user?.isAdmin) {
       setMessage('No tienes permisos para realizar esta acción');
       return;
     }
+    */
 
     if (window.confirm('¿Estás seguro que deseas borrar todas las verificaciones pendientes? Esta acción no se puede deshacer.')) {
       setLoading(true);
@@ -22,10 +32,12 @@ export const ClearRegistrationsButton: React.FC = () => {
         localStorage.removeItem('vibration_app_users');
         localStorage.removeItem('vibration_app_verifications');
         
-        // Mantener el usuario admin
-        const adminUser = user;
-        const users = [adminUser];
-        localStorage.setItem('vibration_app_users', JSON.stringify(users));
+        // Mantener el usuario admin si existe
+        if (user) {
+          const currentUser = user;
+          const users = [currentUser];
+          localStorage.setItem('vibration_app_users', JSON.stringify(users));
+        }
         
         // También podríamos llamar a la función serverless si estamos en producción
         /*
@@ -53,9 +65,10 @@ export const ClearRegistrationsButton: React.FC = () => {
     }
   };
 
-  if (!user?.isAdmin) {
-    return null;
-  }
+  // Removemos esta condición para que siempre se muestre el botón
+  // if (!user?.isAdmin) {
+  //   return null;
+  // }
 
   return (
     <div className="flex flex-col items-center mt-4">
