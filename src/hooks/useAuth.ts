@@ -8,32 +8,11 @@ import {
   VerificationData 
 } from '../types/auth';
 import { v4 as uuidv4 } from 'uuid';
+import { sendVerificationEmail } from '../utils/brevoEmail';
 
-// En una aplicación real, estas funciones se conectarían a un backend
-// Para esta demo, simulamos el envío de correo en la consola
-const sendVerificationEmail = (email: string, token: string, userId: string) => {
-  // Obtener la URL base desde las variables de entorno o usar el valor por defecto
-  const baseUrl = process.env.REACT_APP_API_URL || window.location.origin;
-  
-  console.log(`
-    ---------- EMAIL SIMULADO ----------
-    Para: ${email}
-    Asunto: Verifica tu cuenta en el Simulador de Examen de Vibraciones
-    
-    Hola,
-    
-    Gracias por registrarte en nuestro Simulador de Examen de Vibraciones.
-    Para completar tu registro, haz clic en el siguiente enlace:
-    
-    ${baseUrl}/verify?token=${token}&userId=${userId}
-    
-    Si no solicitaste este registro, puedes ignorar este correo.
-    
-    Saludos,
-    El equipo del Simulador de Examen de Vibraciones
-    -----------------------------------
-  `);
-  
+const sendVerificationEmailToBackend = (email: string, token: string, userId: string) => {  
+  sendVerificationEmail(email, token, userId);
+
   return Promise.resolve(true);
 };
 
@@ -137,7 +116,7 @@ export const useAuth = () => {
       setVerifications(updatedVerifications);
       
       // Enviar correo de verificación
-      await sendVerificationEmail(formData.email, token, userId);
+      await sendVerificationEmailToBackend(formData.email, token, userId);
       
       return { success: true, message: 'Registro exitoso. Por favor verifica tu correo electrónico.' };
     } catch (error) {
