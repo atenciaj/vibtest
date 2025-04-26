@@ -1,27 +1,15 @@
 import React, { useState, FormEvent } from 'react';
-import { RegisterFormType } from '../../types'; 
+import { RegisterFormType } from '../../types';
 import { User, Mail, MapPin, Lock } from 'lucide-react';
 
 
 
-
-interface SendVerificationEmailResponse {
-  success: boolean;
-  message: string;
-  messageId: string;
-}
-
-interface RegisterResponse {
-  success: boolean;
-  message: string;
-}
-
-
 interface RegisterFormProps {
-  
+  onRegister: (formData: RegisterFormType) => Promise<{ success: boolean; message: string }>;
   onLoginClick: () => void;
-
 }
+
+
 
 // Lista de países
 const countries = [
@@ -46,7 +34,7 @@ const countries = [
   "Venezuela"
 ];
 
-export const  RegisterForm: React.FC<RegisterFormProps> = ({ onLoginClick }) => {
+export const  RegisterForm: React.FC<RegisterFormProps> = ({ onLoginClick, onRegister }) => {
   const [formData, setFormData] = useState<RegisterFormType>({
     firstName: '',
     lastName: '',
@@ -83,15 +71,14 @@ export const  RegisterForm: React.FC<RegisterFormProps> = ({ onLoginClick }) => 
     }
     setIsLoading(true);
       try {
-        const response = await fetch('/.netlify/functions/send-verification-email', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(formData) ,
+        const result = await onRegister(formData);
+
+        if (result.success) {
+          setSuccess('¡Registro exitoso! Por favor, revisa tu correo electrónico para verificar tu cuenta.');
+          setFormData({ firstName: '', lastName: '', email: '', username: '', password: '', country: '' });
+        } else {
+          setError(result.message);
         });
-    
-        const data: SendVerificationEmailResponse = await response.json();
     
         if (response.ok && data.success) {
           setSuccess('¡Registro exitoso! Por favor, revisa tu correo electrónico para verificar tu cuenta.');
@@ -146,7 +133,7 @@ export const  RegisterForm: React.FC<RegisterFormProps> = ({ onLoginClick }) => 
               placeholder="Tu nombre"
               required
             />
-          </div>
+          </div> 
           
           <div>
             <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="lastName">
@@ -280,4 +267,3 @@ export const  RegisterForm: React.FC<RegisterFormProps> = ({ onLoginClick }) => 
       </div>
     </div>
   );
-}; 
