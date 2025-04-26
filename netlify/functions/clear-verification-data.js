@@ -1,73 +1,74 @@
-// Función para borrar verificaciones pendientes y correos registrados para pruebas
+// Store the data in memory temporarily
+const verificationDataStore = {};
+
 exports.handler = async function(event, context) {
-  console.log('Iniciando función para limpiar verificaciones pendientes');
-  
-  // Solo permitir solicitudes POST
-  if (event.httpMethod !== 'POST') {
-    console.log('Método no permitido:', event.httpMethod);
+  console.log('Iniciando función para verificar usuario');
+
+  // Solo permitir solicitudes GET
+  if (event.httpMethod !== 'GET') {
     return {
       statusCode: 405,
-      body: JSON.stringify({ error: 'Método no permitido' })
+      body: JSON.stringify({ success: false, message: 'Método no permitido', action: 'error' })
     };
   }
 
-  try {
-    // Verificar autorización - Esta función debe estar protegida
-    const authHeader = event.headers.authorization;
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return {
-        statusCode: 401,
-        body: JSON.stringify({ error: 'Autorización requerida' })
-      };
+  // Obtener token y userId de los query parameters
+  const token = event.queryStringParameters.token;
+  const userId = event.queryStringParameters.userId;
+
+  // Validar que el token y userId existen
+  if (!token) {
+    return {
+      statusCode: 400,
+      body: JSON.stringify({ success: false, message: 'Token requerido', action: 'error' })
     }
-    
-    const token = authHeader.split(' ')[1];
-    // En un escenario real, validarías este token con seguridad
-    // Para pruebas, usamos un token simple definido en las variables de entorno
-    if (token !== process.env.ADMIN_SECRET_KEY) {
-      return {
-        statusCode: 403,
-        body: JSON.stringify({ error: 'No autorizado' })
-      };
+  }
+
+  if (!userId) {
+    return {
+      statusCode: 400,
+      body: JSON.stringify({ success: false, message: 'User ID requerido', action: 'error' })
     }
-    
-    // Opcionalmente, puedes aceptar un correo específico para borrar
-    let targetEmail = null;
-    try {
-      const requestData = JSON.parse(event.body);
-      targetEmail = requestData.email;
-    } catch (error) {
-      console.log('No se proporcionó un correo específico para borrar');
+  }
+
+  // Verificar si el userId existe en el store
+  if (!verificationDataStore[userId]) {
+    return {
+      statusCode: 404,
+      body: JSON.stringify({ success: false, message: 'User ID no encontrado', action: 'error' })
     }
-    
-    console.log('Limpiando datos de verificación', targetEmail ? `para: ${targetEmail}` : 'para todos los registros');
-    
-    // Nota: En un entorno serverless, no podemos acceder directamente a localStorage
-    // En una implementación real, borraríamos los datos de una base de datos
-    
-    // Por ahora, indicamos que el cliente debe limpiar sus propios datos
-    // El frontend debe manejar esta respuesta correctamente
-    
+  }
+
+  // Verificar si el token coincide con el almacenado
+  if (verificationDataStore[userId].token !== token) {
+    return {
+      statusCode: 401,
+      body: JSON.stringify({ success: false, message: 'Token inválido', action: 'error' })
+    }
+  }
+
+  try{
+      // Si todo está bien, eliminar los datos del usuario en el store
+      delete verificationDataStore[userId];
+      console.log("Usuario verificado y datos eliminados");
+
+      // Devolver una respuesta exitosa
     return {
       statusCode: 200,
       body: JSON.stringify({
         success: true,
-        message: targetEmail 
-          ? `Datos de verificación para ${targetEmail} eliminados` 
-          : 'Todos los datos de verificación eliminados',
-        action: 'clear_local_storage'
+        message: 'Usuario verificado exitosamente',
+        action: 'verified'
       })
     };
-  } catch (error) {
-    console.error('Error al limpiar verificaciones:', error);
-    
+  } catch(error){
+     console.error('Error al procesar la verificación:', error);
     return {
       statusCode: 500,
       body: JSON.stringify({
         success: false,
-        error: 'Error al limpiar datos de verificación',
-        details: error.message
+        message: 'Error al procesar la verificación',
+        action: 'error'
       })
-    };
+    }
   }
-}; 

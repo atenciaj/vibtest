@@ -1,10 +1,26 @@
-import React, { useState } from 'react';
-import { RegisterForm as RegisterFormType } from '../../types/auth';
+import React, { useState, FormEvent } from 'react';
+import { RegisterForm as RegisterFormType } from '../../types/auth'; // Asegúrate de que esta importación es correcta
 import { User, Mail, MapPin, Lock } from 'lucide-react';
 
+
+
+
+interface SendVerificationEmailResponse {
+  success: boolean;
+  message: string;
+  messageId: string;
+}
+
+interface RegisterResponse {
+  success: boolean;
+  message: string;
+}
+
+
 interface RegisterFormProps {
-  onRegister: (formData: RegisterFormType) => Promise<{ success: boolean; message: string }>;
+  
   onLoginClick: () => void;
+
 }
 
 // Lista de países
@@ -30,7 +46,7 @@ const countries = [
   "Venezuela"
 ];
 
-export const RegisterForm: React.FC<RegisterFormProps> = ({ onRegister, onLoginClick }) => {
+export const RegisterForm: React.FC<RegisterFormProps> = ({ onLoginClick }) => {
   const [formData, setFormData] = useState<RegisterFormType>({
     firstName: '',
     lastName: '',
@@ -44,6 +60,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onRegister, onLoginC
   const [success, setSuccess] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   
+  
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData((prev: RegisterFormType) => ({
@@ -56,39 +73,43 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onRegister, onLoginC
     return /^\d{4}$/.test(password);
   };
   
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    setError(null);
-    setSuccess(null);
-    
-    // Validar password
+    setError(null)
+    setSuccess(null)
     if (!validatePassword(formData.password)) {
       setError('La contraseña debe ser de 4 dígitos numéricos');
       return;
     }
-    
     setIsLoading(true);
-    
-    try {
-      const result = await onRegister(formData);
-      
-      if (result.success) {
-        setSuccess(result.message);
-        // Resetear el formulario en caso de éxito
-        setFormData({
-          firstName: '',
-          lastName: '',
-          email: '',
-          username: '',
-          password: '',
-          country: ''
+      try {
+        const response = await fetch('/.netlify/functions/send-verification-email', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(formData),
         });
-      } else {
-        setError(result.message);
+    
+        const data: SendVerificationEmailResponse = await response.json();
+    
+        if (response.ok && data.success) {
+          setSuccess('¡Registro exitoso! Por favor, revisa tu correo electrónico para verificar tu cuenta.');
+          setFormData({
+            firstName: '',
+            lastName: '',
+            email: '',
+            username: '',
+            password: '',
+            country: ''
+          });
+        } else {
+          setError(data.message || 'Error al registrar usuario');
+        }
+      } catch (err) {
+        setError('Error al registrar usuario, intente mas tarde');
       }
-    } catch (err) {
-      setError('Error al registrar usuario');
-    } finally {
+      finally{
       setIsLoading(false);
     }
   };
@@ -243,7 +264,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onRegister, onLoginC
             disabled={isLoading}
             className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:ring-2 focus:ring-green-500 w-full"
           >
-            {isLoading ? 'Registrando...' : 'Registrarme'}
+            {isLoading ? 'Registering...' : 'Register'}
           </button>
         </div>
       </form>

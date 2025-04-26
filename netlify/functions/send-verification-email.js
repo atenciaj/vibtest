@@ -1,132 +1,127 @@
 const Brevo = require('@getbrevo/brevo');
 
-exports.handler = async function(event, context) {
-  console.log('Iniciando función de envío de correo');
-  
-  // Solo permitir solicitudes POST
+// In-memory store for verification data (replace with a database in production)
+const verificationDataStore = {};
+
+// Function to generate verification data (token and user ID)
+const generateVerificationData = () => {
+  const token = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+  const userId = Math.random().toString(36).substring(2, 9);
+  return { token, userId };
+};
+
+// Function to validate email format
+const isValidEmail = (email) => {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email);
+};
+
+// Function to validate environment variables
+const validateEnvVariables = () => {
+  const requiredVariables = ['BREVO_API_KEY', 'BREVO_SENDER_EMAIL', 'BREVO_SENDER_NAME', 'SITE_URL'];
+  const missingVariables = requiredVariables.filter(variable => !process.env[variable]);
+  if (missingVariables.length > 0) {
+    throw new Error(`Missing environment variables: ${missingVariables.join(', ')}`);
+  }
+};
+
+exports.handler = async (event, context) => {
   if (event.httpMethod !== 'POST') {
-    console.log('Método no permitido:', event.httpMethod);
-    return {
-      statusCode: 405,
-      body: JSON.stringify({ error: 'Método no permitido' })
-    };
+    return { statusCode: 405, body: JSON.stringify({ error: 'Method Not Allowed' }) };
+  }
+  console.log('Starting send verification email function');
+  
+  // Validate env variables
+  try{
+    validateEnvVariables();
+  } catch (error){
+    return { statusCode: 500, body: JSON.stringify({error: error.message}) };
+  }
+  
+  let requestData;
+  try {
+    requestData = JSON.parse(event.body);
+  } catch (error) {
+    return { statusCode: 400, body: JSON.stringify({ error: 'Invalid request body' }) };
   }
 
+  const { email, firstName, lastName } = requestData;
+  
+  // Validate required fields
+  if (!email || !firstName || !lastName) {
+    return { statusCode: 400, body: JSON.stringify({ error: 'Missing required fields' }) };
+  }
+
+  // Validate email format
+  if (!isValidEmail(email)) {
+    return { statusCode: 400, body: JSON.stringify({ error: 'Invalid email format' }) };
+  }
+
+  const { token, userId } = generateVerificationData();
+  
+  // Store verification data temporarily
+  verificationDataStore[userId] = {
+    email,
+    token,
+    firstName,
+    lastName,
+  };
+  
+  // Obtener la URL base desde las variables de entorno o usar la URL de Netlify
+  const baseUrl = process.env.SITE_URL || context.site.url;
+  const verificationLink = `${baseUrl}/verify?token=${token}&userId=${userId}`;
+
+  // Configure Brevo client
+  const defaultClient = Brevo.ApiClient.instance;
+  defaultClient.authentications['api-key'].apiKey = process.env.BREVO_API_KEY;
+  const apiInstance = new Brevo.TransactionalEmailsApi();
+
+  // Create SendSmtpEmail
+  const sendSmtpEmail = new Brevo.SendSmtpEmail();
+  sendSmtpEmail.sender = { name: process.env.BREVO_SENDER_NAME, email: process.env.BREVO_SENDER_EMAIL };
+  sendSmtpEmail.to = [{ email, name: `${firstName} ${lastName}` }];
+  sendSmtpEmail.subject = 'Verify your account in the Vibration Exam Simulator';
+  sendSmtpEmail.htmlContent = `
+    <html>
+      <head></head>
+      <body>
+        <h2>Hello ${firstName},</h2>
+        <p>Thank you for registering in our Vibration Exam Simulator.</p>
+        <p>To complete your registration, click on the following link:</p>
+        <p><a href="${verificationLink}">${verificationLink}</a></p>
+        <p>If you did not request this registration, you can ignore this email.</p>
+        <p>Regards,<br>The Vibration Exam Simulator Team</p>
+      </body>
+    </html>
+  `;
+  sendSmtpEmail.tags = ['registration', 'verification'];
+
+  // Send the email using Brevo API
   try {
-    // Validar que tenemos las variables de entorno necesarias
-    console.log('Verificando variables de entorno...');
-    if (!process.env.BREVO_API_KEY) {
-      console.error('BREVO_API_KEY no está configurada');
-      throw new Error('BREVO_API_KEY no está configurada');
-    }
-
-    // Parsear el cuerpo de la solicitud
-    let requestData;
-    try {
-      requestData = JSON.parse(event.body);
-      console.log('Datos recibidos:', {
-        email: requestData.email,
-        firstName: requestData.firstName,
-        lastName: requestData.lastName,
-      });
-    } catch (error) {
-      console.error('Error al parsear el cuerpo de la solicitud:', error);
-      return {
-        statusCode: 400,
-        body: JSON.stringify({ error: 'Cuerpo de la solicitud inválido' })
-      };
-    }
-
-    const { email, token, userId, firstName, lastName } = requestData;
-
-    // Validar campos requeridos
-    if (!email || !token || !userId || !firstName || !lastName) {
-      console.error('Faltan campos requeridos:', { email, firstName, lastName });
-      return {
-        statusCode: 400,
-        body: JSON.stringify({ error: 'Faltan campos requeridos' })
-      };
-    }
-    
-    // Obtener la URL base desde las variables de entorno o usar la URL de Netlify
-    const baseUrl = process.env.SITE_URL || context.site.url;
-    console.log('URL base:', baseUrl);
-    
-    // Crear el enlace de verificación
-    const verificationLink = `${baseUrl}/verify?token=${token}&userId=${userId}`;
-    console.log('Enlace de verificación generado');
-    
-    // Configurar cliente Brevo según documentación oficial
-    const defaultClient = Brevo.ApiClient.instance;
-    defaultClient.authentications['api-key'].apiKey = process.env.BREVO_API_KEY;
-    
-    const apiInstance = new Brevo.TransactionalEmailsApi();
-    
-    // Crea la solicitud utilizando SendSmtpEmail según documentación
-    const sendSmtpEmail = new Brevo.SendSmtpEmail();
-    
-    sendSmtpEmail.sender = {
-      name: "Simulador de Vibraciones",
-      email: "admin@vib-test.ltd"
-    };
-    
-    sendSmtpEmail.to = [{
-      email: email,
-      name: `${firstName} ${lastName}`
-    }];
-    
-    sendSmtpEmail.subject = "Verifica tu cuenta en el Simulador de Examen de Vibraciones";
-    
-    sendSmtpEmail.htmlContent = `
-      <html>
-        <head></head>
-        <body>
-          <h2>Hola ${firstName},</h2>
-          <p>Gracias por registrarte en nuestro Simulador de Examen de Vibraciones.</p>
-          <p>Para completar tu registro, haz clic en el siguiente enlace:</p>
-          <p><a href="${verificationLink}">${verificationLink}</a></p>
-          <p>Si no solicitaste este registro, puedes ignorar este correo.</p>
-          <p>Saludos,<br>El equipo del Simulador de Examen de Vibraciones</p>
-        </body>
-      </html>
-    `;
-    
-    // Agregar tags para seguimiento
-    sendSmtpEmail.tags = ["registro", "verificacion"];
-    
-    console.log('Enviando correo a través de Brevo API...');
-    
-    // Enviar el correo utilizando la API de Brevo
     const result = await apiInstance.sendTransacEmail(sendSmtpEmail);
-    console.log('Email enviado exitosamente:', result);
-    
-    // Devolver una respuesta exitosa
     return {
       statusCode: 200,
-      body: JSON.stringify({ 
-        success: true, 
-        message: 'Correo de verificación enviado correctamente',
-        messageId: result.messageId
-      })
+      body: JSON.stringify({
+        success: true,
+        message: 'Verification email sent successfully',
+        messageId: result.messageId,
+      }),
     };
   } catch (error) {
-    console.error('Error detallado:', {
+    console.error('Error sending email:', {
       message: error.message,
       stack: error.stack,
       response: error.response?.text,
-      config: error.config
+      config: error.config,
     });
-    
-    // Devolver el error
     return {
-      statusCode: 500,
-      body: JSON.stringify({ 
-        success: false, 
-        error: 'Error al enviar correo de verificación',
+      statusCode: error.response?.status || 500,
+      body: JSON.stringify({
+        error: 'Failed to send verification email',
         details: error.message,
         response: error.response?.text,
-        stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
-      })
+        stack: process.env.NODE_ENV === 'development' ? error.stack : undefined,
+      }),
     };
   }
 }; 
