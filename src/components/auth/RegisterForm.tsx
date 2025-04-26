@@ -1,5 +1,5 @@
 import React, { useState, FormEvent } from 'react';
-import { RegisterForm as RegisterFormType } from '../../types/auth'; // Asegúrate de que esta importación es correcta
+import { RegisterFormType } from '../../types'; 
 import { User, Mail, MapPin, Lock } from 'lucide-react';
 
 
@@ -46,7 +46,7 @@ const countries = [
   "Venezuela"
 ];
 
-export const RegisterForm: React.FC<RegisterFormProps> = ({ onLoginClick }) => {
+export const  RegisterForm: React.FC<RegisterFormProps> = ({ onLoginClick }) => {
   const [formData, setFormData] = useState<RegisterFormType>({
     firstName: '',
     lastName: '',
@@ -70,7 +70,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onLoginClick }) => {
   };
   
   const validatePassword = (password: string) => {
-    return /^\d{4}$/.test(password);
+    return /^\d{4}$/.test(password); 
   };
   
   const handleSubmit = async (e: FormEvent) => {
@@ -88,7 +88,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onLoginClick }) => {
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify(formData),
+          body: JSON.stringify(formData) ,
         });
     
         const data: SendVerificationEmailResponse = await response.json();
@@ -110,7 +110,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onLoginClick }) => {
         setError('Error al registrar usuario, intente mas tarde');
       }
       finally{
-      setIsLoading(false);
+        setIsLoading(false);
     }
   };
 
