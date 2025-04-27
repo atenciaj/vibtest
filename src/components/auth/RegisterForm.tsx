@@ -1,5 +1,5 @@
 import React, { useState, FormEvent, } from 'react';
-import { RegisterFormType } from '../../types';
+import { RegisterForm } from '../../types/auth';
 import { User, Mail, MapPin, Lock } from 'lucide-react';
 
 
@@ -37,14 +37,14 @@ const countries = [
 export const  RegisterForm: React.FC<RegisterFormProps> = ({ onLoginClick, onRegister }) => {
   const [formData, setFormData] = useState<RegisterFormType>({
     firstName: '',
-    lastName: '',
-    email: '',
-    username: '',
-    password: '',
-    country: ''
+    lastName: "",
+    email: "",
+    username: "",
+    password: "",
+    country: "",
   });
   
-  const [error, setError] = useState<string | null>(null);
+   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   
@@ -252,5 +252,5 @@ export const  RegisterForm: React.FC<RegisterFormProps> = ({ onLoginClick, onReg
       </div>
     </div>
   );
-};
+};}
 }
