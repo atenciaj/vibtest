@@ -3,7 +3,7 @@ import { RegisterForm } from '../../types/auth'; // Importa RegisterForm en luga
 import { User, Mail, MapPin, Lock } from 'lucide-react';
 
 interface RegisterFormProps {
-  onRegister: (formData: RegisterForm) => Promise<{ success: boolean; message: string }>; // Utiliza RegisterForm aquí
+  onRegister: (formData: RegisterForm) => Promise<{ success: boolean; message: string }>; 
   onLoginClick: () => void;
 }
 
@@ -30,16 +30,16 @@ const countries = [
   "Venezuela"
 ];  
 
-export const RegisterForm: React.FC<RegisterFormProps> = ({ onLoginClick, onRegister }) => {
-  const [formData, setFormData] = useState<RegisterForm>({ // Utiliza RegisterForm aquí
+export const RegisterFormComponent: React.FC<RegisterFormProps> = ({ onLoginClick, onRegister }) => { 
+  const [formData, setFormData] = useState<RegisterForm>({ 
     firstName: '',
     lastName: "",
     email: "",
     username: "",
     password: "", 
-    country: "",
+    country: ""
   });
-  
+
    const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -47,7 +47,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onLoginClick, onRegi
   
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setFormData((prev: RegisterForm) => ({ // Utiliza RegisterForm aquí
+    setFormData((prev: RegisterForm) => ({ 
       ...prev,
       [name]: value
     }));
@@ -60,7 +60,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onLoginClick, onRegi
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError(null)
-    setSuccess(null)
+    setSuccess(null);
     if (!validatePassword(formData.password)) {
       setError('La contraseña debe ser de 4 dígitos numéricos'); // Mensaje de error correcto
       return;
@@ -81,7 +81,9 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onLoginClick, onRegi
       }
       finally{
         setIsLoading(false);
-      }}
+      }
+  };
+
 return (
     <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md mx-auto">
       <h2 className="text-2xl font-bold mb-6 text-center">Registro de Usuario</h2>
@@ -247,5 +249,5 @@ return (
         </button>
       </div>
     </div>
-  );}
-;
+  )
+};
