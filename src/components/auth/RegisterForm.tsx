@@ -26,7 +26,7 @@ export const RegisterFormComponent: React.FC<RegisterFormProps> = ({ onLoginClic
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const validatePassword = (password: string) => /^\d{4}$/.test(password);
+  const validatePassword = (password: string) => /^[0-9]{4}$/.test(password);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -46,7 +46,8 @@ export const RegisterFormComponent: React.FC<RegisterFormProps> = ({ onLoginClic
         setError(result.message);
       }
     } catch (err) {
-      setError('Error al registrar usuario, intente mas tarde');
+      console.error('Error durante el registro:', err);
+      setError('Error al registrar usuario, intente más tarde');
     } finally {
       setIsLoading(false);
     }
@@ -69,7 +70,7 @@ export const RegisterFormComponent: React.FC<RegisterFormProps> = ({ onLoginClic
         <div className="grid grid-cols-2 gap-4 mb-4">
           <div>
             <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="firstName">Nombre</label>
-            <input id="firstName" name="firstName" type="text" value={formData.firstName} onChange={handleChange} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Tu nombre" required />
+            <input id="firstName" name="firstName" type="text" value={formData.firstName} onChange={handleChange} className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Tu nombre" required/>
           </div>
           <div>
             <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="lastName">Apellido</label>
@@ -79,21 +80,21 @@ export const RegisterFormComponent: React.FC<RegisterFormProps> = ({ onLoginClic
         <div className="mb-4">
           <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="email">Correo Electrónico</label>
           <div className="flex">
-            <div className="bg-gray-100 flex items-center justify-center px-3 border border-r-0 rounded-l-md"><Mail size={18} /></div>
+            <div className="bg-gray-100 flex items-center justify-center px-3 border border-r-0 rounded-l-md"><Mail size={18} aria-hidden={true}/></div>
             <input id="email" name="email" type="email" value={formData.email} onChange={handleChange} className="shadow appearance-none border rounded-r-md w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="tu.correo@ejemplo.com" required />
           </div>
         </div>
         <div className="mb-4">
           <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="username">Nombre de Usuario</label>
           <div className="flex">
-            <div className="bg-gray-100 flex items-center justify-center px-3 border border-r-0 rounded-l-md"><User size={18} /></div>
+            <div className="bg-gray-100 flex items-center justify-center px-3 border border-r-0 rounded-l-md"><User size={18} aria-hidden={true}/></div>
             <input id="username" name="username" type="text" value={formData.username} onChange={handleChange} className="shadow appearance-none border rounded-r-md w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Nombre de usuario" required />
           </div>
         </div>
         <div className="mb-4">
           <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="country">País</label>
           <div className="flex">
-            <div className="bg-gray-100 flex items-center justify-center px-3 border border-r-0 rounded-l-md"><MapPin size={18} /></div>
+            <div className="bg-gray-100 flex items-center justify-center px-3 border border-r-0 rounded-l-md"><MapPin size={18} aria-hidden={true}/></div>
             <select id="country" name="country" value={formData.country} onChange={handleChange} className="shadow appearance-none border rounded-r-md w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500" required>
               <option value="">Selecciona tu país</option>
               {countries.map(country => <option key={country} value={country}>{country}</option>)}
@@ -103,14 +104,13 @@ export const RegisterFormComponent: React.FC<RegisterFormProps> = ({ onLoginClic
         <div className="mb-6">
           <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="password">Contraseña (4 dígitos)</label>
           <div className="flex">
-            <div className="bg-gray-100 flex items-center justify-center px-3 border border-r-0 rounded-l-md"><Lock size={18} /></div>
+            <div className="bg-gray-100 flex items-center justify-center px-3 border border-r-0 rounded-l-md"><Lock size={18} aria-hidden={true}/></div>
             <input id="password" name="password" type="password" value={formData.password} onChange={handleChange} className="shadow appearance-none border rounded-r-md w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="4 dígitos numéricos" maxLength={4} required />
           </div>
           <p className="text-sm text-gray-600 mt-2">La contraseña debe ser de 4 dígitos numéricos</p>
         </div>
         <div className="flex items-center justify-between">
-          <button type="submit" disabled={isLoading} className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:ring-2 focus:ring-green-500 w-full">
-            {isLoading ? 'Registering...' : 'Register'}
+          <button type="submit" disabled={isLoading} className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:ring-2 focus:ring-green-500 w-full">{isLoading ? 'Registrando...' : 'Registrar'}
           </button>
         </div>
       </form>
