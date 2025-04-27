@@ -80,19 +80,6 @@ export const  RegisterForm: React.FC<RegisterFormProps> = ({ onLoginClick, onReg
           setError(result.message);
         }
     
-        if (response.ok && data.success) {
-          setSuccess('¡Registro exitoso! Por favor, revisa tu correo electrónico para verificar tu cuenta.');
-          setFormData({
-            firstName: '',
-            lastName: '',
-            email: '',
-            username: '',
-            password: '',
-            country: ''
-          });
-        } else {
-          setError(data.message || 'Error al registrar usuario');
-        }
       } catch (err) {
         setError('Error al registrar usuario, intente mas tarde');
       }
