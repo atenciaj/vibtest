@@ -1,15 +1,11 @@
-import React, { useState, FormEvent, } from 'react';
-import { RegisterForm } from '../../types/auth';
+import React, { useState, FormEvent } from 'react';
+import { RegisterForm } from '../../types/auth'; // Importa RegisterForm en lugar de RegisterFormType
 import { User, Mail, MapPin, Lock } from 'lucide-react';
 
-
-
 interface RegisterFormProps {
-  onRegister: (formData: RegisterFormType) => Promise<{ success: boolean; message: string }>;
+  onRegister: (formData: RegisterForm) => Promise<{ success: boolean; message: string }>; // Utiliza RegisterForm aquí
   onLoginClick: () => void;
 }
-
-
 
 // Lista de países
 const countries = [
@@ -34,13 +30,13 @@ const countries = [
   "Venezuela"
 ];  
 
-export const  RegisterForm: React.FC<RegisterFormProps> = ({ onLoginClick, onRegister }) => {
-  const [formData, setFormData] = useState<RegisterFormType>({
+export const RegisterForm: React.FC<RegisterFormProps> = ({ onLoginClick, onRegister }) => {
+  const [formData, setFormData] = useState<RegisterForm>({ // Utiliza RegisterForm aquí
     firstName: '',
     lastName: "",
     email: "",
     username: "",
-    password: "",
+    password: "", 
     country: "",
   });
   
@@ -51,7 +47,7 @@ export const  RegisterForm: React.FC<RegisterFormProps> = ({ onLoginClick, onReg
   
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setFormData((prev: RegisterFormType) => ({
+    setFormData((prev: RegisterForm) => ({ // Utiliza RegisterForm aquí
       ...prev,
       [name]: value
     }));
@@ -66,7 +62,7 @@ export const  RegisterForm: React.FC<RegisterFormProps> = ({ onLoginClick, onReg
     setError(null)
     setSuccess(null)
     if (!validatePassword(formData.password)) {
-      setError('La contraseña debe ser de 4 dígitos numéricos');
+      setError('La contraseña debe ser de 4 dígitos numéricos'); // Mensaje de error correcto
       return;
     }
     setIsLoading(true);
@@ -85,8 +81,8 @@ export const  RegisterForm: React.FC<RegisterFormProps> = ({ onLoginClick, onReg
       }
       finally{
         setIsLoading(false);
-      }
-  return (
+      }}
+return (
     <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md mx-auto">
       <h2 className="text-2xl font-bold mb-6 text-center">Registro de Usuario</h2>
       
@@ -251,6 +247,5 @@ export const  RegisterForm: React.FC<RegisterFormProps> = ({ onLoginClick, onReg
         </button>
       </div>
     </div>
-  );
-};}
-}
+  );}
+;
