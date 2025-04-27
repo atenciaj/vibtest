@@ -1,6 +1,6 @@
 import React, { useState, FormEvent } from 'react';
-import { RegisterForm } from '../../types/auth';
 import { User, Mail, MapPin, Lock } from 'lucide-react';
+import { RegisterForm } from '../../types/form';
 
 interface RegisterFormProps {
   onRegister: (formData: RegisterForm) => Promise<{ success: boolean; message: string }>;
