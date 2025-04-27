@@ -3,7 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { LoginForm } from './LoginForm';
 import { RegisterFormComponent } from './RegisterForm';
 import { useAuth } from '../../context/AuthContext';
-import { LoginCredentials, RegisterForm as RegisterFormType } from '../../types/auth';
+import { LoginCredentials } from '../../types/auth';
+import { RegisterForm as RegisterFormType } from '../../types/form';
 
 interface AuthLayoutProps {
   children?: ReactNode;
