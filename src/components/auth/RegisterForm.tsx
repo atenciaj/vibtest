@@ -1,4 +1,4 @@
-import React, { useState, FormEvent } from 'react';
+import React, { useState, FormEvent, } from 'react';
 import { RegisterFormType } from '../../types';
 import { User, Mail, MapPin, Lock } from 'lucide-react';
 
@@ -32,7 +32,7 @@ const countries = [
   "República Dominicana", 
   "Uruguay", 
   "Venezuela"
-];
+];  
 
 export const  RegisterForm: React.FC<RegisterFormProps> = ({ onLoginClick, onRegister }) => {
   const [formData, setFormData] = useState<RegisterFormType>({
@@ -85,9 +85,7 @@ export const  RegisterForm: React.FC<RegisterFormProps> = ({ onLoginClick, onReg
       }
       finally{
         setIsLoading(false);
-    }
-  };
-
+      }
   return (
     <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md mx-auto">
       <h2 className="text-2xl font-bold mb-6 text-center">Registro de Usuario</h2>
@@ -254,3 +252,5 @@ export const  RegisterForm: React.FC<RegisterFormProps> = ({ onLoginClick, onReg
       </div>
     </div>
   );
+};
+}
