@@ -72,7 +72,7 @@ export const  RegisterForm: React.FC<RegisterFormProps> = ({ onLoginClick, onReg
     setIsLoading(true);
       try {
         const result = await onRegister(formData);
-
+      
         if (result.success) {
           setSuccess('¡Registro exitoso! Por favor, revisa tu correo electrónico para verificar tu cuenta.');
           setFormData({ firstName: '', lastName: '', email: '', username: '', password: '', country: '' });
