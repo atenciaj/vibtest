@@ -1,7 +1,7 @@
 import React, { ReactNode, useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { LoginForm } from './LoginForm';
-import { RegisterForm } from './RegisterForm';
+import { RegisterFormComponent } from './RegisterForm';
 import { useAuth } from '../../context/AuthContext';
 import { LoginCredentials, RegisterForm as RegisterFormType } from '../../types/auth';
 
@@ -48,7 +48,7 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({ children }) => {
             onRegisterClick={() => handleModeSwitch('register')} 
           />
         ) : (
-          <RegisterForm 
+          <RegisterFormComponent 
             onRegister={handleRegister} 
             onLoginClick={() => handleModeSwitch('login')} 
           />
