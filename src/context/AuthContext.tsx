@@ -1,6 +1,7 @@
 import React, { createContext, ReactNode, useContext, useMemo } from 'react';
 import { useAuth as useAuthHook } from '../hooks/useAuth';
-import { User, LoginCredentials, RegisterForm, VerificationData } from '../types/auth';
+import { User, LoginCredentials, VerificationData } from '../types/auth';
+import { RegisterForm } from '../types/form';
 
 interface AuthContextType {
   user: User | null;
