@@ -2,12 +2,13 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { useLocalStorage } from './useLocalStorage';
 import { 
   User, 
-  LoginCredentials, 
-  RegisterForm, 
+  LoginCredentials,
   AuthState, 
   VerificationData 
 } from '../types/auth';
 import { v4 as uuidv4 } from 'uuid';
+import { RegisterForm } from '../types/form';
+
 
 // Función para enviar correo de verificación usando la función serverless de Netlify
 const sendVerificationEmail = async (email: string, token: string, userId: string, firstName: string, lastName: string) => {

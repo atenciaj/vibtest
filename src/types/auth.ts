@@ -16,14 +16,6 @@ export interface LoginCredentials {
   password: string;
 }
 
-export interface RegisterForm {
-  firstName: string;
-  lastName: string;
-  email: string;
-  username: string;
-  password: string;
-  country: string;
-}
 
 export interface AuthState {
   user: User | null;
