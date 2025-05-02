@@ -3,6 +3,7 @@ const verificationDataStore = {};
 
 exports.handler = async function(event, context) {
   console.log('Iniciando función para verificar usuario');
+  console.log('Evento recibido:', JSON.stringify(event));
 
   // Solo permitir solicitudes GET
   if (event.httpMethod !== 'GET') {
@@ -49,6 +50,7 @@ exports.handler = async function(event, context) {
 
   try{
       // Si todo está bien, eliminar los datos del usuario en el store
+      console.log('Eliminando datos del usuario:', userId);
       delete verificationDataStore[userId];
       console.log("Usuario verificado y datos eliminados");
 
